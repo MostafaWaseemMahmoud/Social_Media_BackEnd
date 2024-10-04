@@ -4,10 +4,10 @@ const friendsettings = require("./routers/friends");
 const posts = require("./routers/posts");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
-app.use(bodyParser.json());
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
+app.use(bodyParser.json());
 
 app.use("/usersettings" , usersettings)
 app.use("/friendsettings" , friendsettings)
@@ -15,6 +15,7 @@ app.use("/posts" , posts);
 app.get("/" ,  (req,res)=> {
     res.send("Server Is Connected !!!")
 })
+
 
 mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e").then(()=> {
     console.log("DataBase Connected Successfully");
