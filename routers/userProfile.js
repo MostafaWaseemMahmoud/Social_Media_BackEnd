@@ -35,6 +35,7 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
       email: email,
       password: password,
       profilePic: profilePic,
+      Friends: [],
     });
     
     await user.save();
