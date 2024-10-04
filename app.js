@@ -23,3 +23,4 @@ mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb
     console.log("Can't Connect To Database With This Error: " + e)
 })
 
+module.exports = app;
