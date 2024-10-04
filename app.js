@@ -3,6 +3,8 @@ const usersettings = require("./routers/userProfile");
 const friendsettings = require("./routers/friends");
 const posts = require("./routers/posts");
 const mongoose = require("mongoose");
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
