@@ -5,7 +5,7 @@ const posts = require("./routers/posts");
 const mongoose = require("mongoose");
 const app = express();
 app.use(express.json());
-const port = 3000 || process.PORT
+const PORT = process.env.PORT || 3000;
 
 app.use("/usersettings" , usersettings)
 app.use("/friendsettings" , friendsettings)
@@ -16,7 +16,7 @@ app.get("/" ,  (req,res)=> {
 
 mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e").then(()=> {
     console.log("DataBase Connected Successfully");
-    app.listen(port, () => {
+    app.listen(PORT, () => {
         console.log('Server started on http://localhost:3000');
       });
 }).catch((e)=> {
