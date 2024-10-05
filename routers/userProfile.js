@@ -29,29 +29,29 @@ const upload = multer({ storage: storage });
 // Upload route using Cloudinary storage
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
+    console.log(req.file); // Check if file is being received
+    
     const { name, email, password } = req.body;
+    const profilePic = req.file ? req.file.path : null; // Avoid error if req.file is undefined
 
-    // Hash the password before saving it in the database
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const profilePic = req.file.path; // Get Cloudinary file path
-
-    // Create a new user
     const user = new userSchema({
-      name: name,
-      email: email,
-      password: hashedPassword, // Save the hashed password
-      profilePic: profilePic, // Profile picture URL from Cloudinary
-      Friends: [], // Initialize Friends array
+      name,
+      email,
+      password: hashedPassword,
+      profilePic,
+      Friends: [],
     });
 
-    await user.save(); // Save user to the database
+    await user.save();
     res.status(200).send(user);
   } catch (err) {
-    console.error("Error while saving user:", err); // Log the actual error
+    console.error("Error while saving user:", err);
     res.status(500).send("Internal server error");
   }
 });
+
 
 // Route to get all users
 router.get("/allusers", async (req, res) => {
