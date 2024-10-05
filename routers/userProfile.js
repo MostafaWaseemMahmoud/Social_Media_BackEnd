@@ -1,14 +1,14 @@
-const express = require("express");
+const express = require("express"); // Make sure express is correctly imported
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const userSchema = require('../models/user.model');
 const bcrypt = require('bcrypt'); // For password hashing
-require('dotenv').config(); // Use environment variables for security
+require('dotenv').config(); // For environment variables
 
-const router = express.Router(); // Define the router
+const router = express.Router(); // Define the router correctly
 
-// Configure Cloudinary
+// Configure Cloudinary with environment variables
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -30,12 +30,12 @@ const upload = multer({ storage: storage });
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    
+
     // Hash the password before saving it in the database
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const profilePic = req.file.path; // Get Cloudinary file path
-    
+
     // Create a new user
     const user = new userSchema({
       name: name,
@@ -44,7 +44,7 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
       profilePic: profilePic, // Profile picture URL from Cloudinary
       Friends: [], // Initialize Friends array
     });
-    
+
     await user.save(); // Save user to the database
     res.status(200).send(user);
   } catch (err) {
