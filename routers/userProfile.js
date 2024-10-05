@@ -28,12 +28,14 @@ const router = express.Router();
 
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
-    const { name, email, password, profilePic } = req.body;
+    console.log("Request received:", req.body);
+    const { name, email, password, profilePic } = req.body; 
     let profilePicUrl;
 
     // Check if a file is uploaded or a profilePic URL is provided
     if (req.file) {
       profilePicUrl = req.file.path; // Use uploaded file's URL
+      console.log("File uploaded to Cloudinary:", profilePicUrl);
     } else if (profilePic) {
       profilePicUrl = profilePic; // Use URL from body
     } else {
@@ -42,6 +44,7 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("Password hashed successfully");
 
     // Create and save the user
     const user = new userSchema({
@@ -53,6 +56,7 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
     });
 
     await user.save();
+    console.log("User saved successfully");
     res.status(200).send(user);
   } catch (err) {
     console.error("Error while saving user:", err);
