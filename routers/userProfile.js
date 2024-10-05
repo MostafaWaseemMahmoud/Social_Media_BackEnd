@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
+const bcrypt = require('bcrypt'); // Import bcrypt
 const userSchema = require('../models/user.model');
 require('dotenv').config();
 
@@ -27,27 +28,27 @@ const router = express.Router();
 
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
-    const { name, email, password, profilePic } = req.body; // Get profilePic from body if it's a URL
+    const { name, email, password, profilePic } = req.body;
     let profilePicUrl;
 
+    // Check if a file is uploaded or a profilePic URL is provided
     if (req.file) {
-      // If a file is uploaded, use the uploaded file's Cloudinary path
-      profilePicUrl = req.file.path;
+      profilePicUrl = req.file.path; // Use uploaded file's URL
     } else if (profilePic) {
-      // If profilePic is a URL, use it directly
-      profilePicUrl = profilePic;
+      profilePicUrl = profilePic; // Use URL from body
     } else {
-      // Use a default picture if no file or URL is provided
-      profilePicUrl = 'https://example.com/default-profile-pic.jpg';
+      profilePicUrl = 'https://example.com/default-profile-pic.jpg'; // Default profile picture
     }
 
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create and save the user
     const user = new userSchema({
       name,
       email,
       password: hashedPassword,
-      profilePic: profilePicUrl, // Store either the file URL or the provided URL
+      profilePic: profilePicUrl,
       Friends: [],
     });
 
@@ -55,7 +56,7 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
     res.status(200).send(user);
   } catch (err) {
     console.error("Error while saving user:", err);
-    res.status(500).send("Internal server error");
+    res.status(500).send("Error while creating user. Please try again.");
   }
 });
 
