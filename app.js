@@ -4,11 +4,12 @@ const friendsettings = require("./routers/friends");
 const posts = require("./routers/posts");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
+const cors = require("cors")
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
-
+app.use(cors())
 app.use("/usersettings" , usersettings)
 app.use("/friendsettings" , friendsettings)
 app.use("/posts" , posts);
