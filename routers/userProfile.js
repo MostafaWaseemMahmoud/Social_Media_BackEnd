@@ -1,11 +1,14 @@
-const express = require("express");
+const express = require("express"); // Make sure express is correctly imported
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const userSchema = require('../models/user.model');
-require('dotenv').config();
+const bcrypt = require('bcrypt'); // For password hashing
+require('dotenv').config(); // For environment variables
 
-// Configure Cloudinary
+const router = express.Router(); // Define the router correctly
+
+// Configure Cloudinary with environment variables
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -23,8 +26,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
-const router = express.Router();
-
+// Upload route using Cloudinary storage
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
     const { name, email, password, profilePic } = req.body; // Get profilePic from body if it's a URL
@@ -55,6 +57,17 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
     res.status(200).send(user);
   } catch (err) {
     console.error("Error while saving user:", err);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Route to get all users
+router.get("/allusers", async (req, res) => {
+  try {
+    const allUsers = await userSchema.find({}); // Fetch all users
+    res.status(200).send(allUsers);
+  } catch (err) {
+    console.error("Error while fetching users:", err); // Log the actual error
     res.status(500).send("Internal server error");
   }
 });
