@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
-const bcrypt = require('bcrypt'); // Import bcrypt
+const bcrypt = require('bcrypt');
 const userSchema = require('../models/user.model');
 require('dotenv').config();
 
@@ -23,9 +23,9 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage: storage });
-
 const router = express.Router();
 
+// Route to add a new user
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
     console.log("Request received:", req.body);
@@ -61,6 +61,17 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
   } catch (err) {
     console.error("Error while saving user:", err);
     res.status(500).send("Error while creating user. Please try again.");
+  }
+});
+
+// Route to get all users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await userSchema.find(); // Retrieve all users from the database
+    res.status(200).json(users); // Return the users as JSON
+  } catch (err) {
+    console.error("Error while fetching users:", err);
+    res.status(500).send("Error while fetching users. Please try again.");
   }
 });
 
