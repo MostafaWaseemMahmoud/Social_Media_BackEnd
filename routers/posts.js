@@ -72,7 +72,7 @@ router.post('/addpost/:userId', upload.single('file'), (req, res, next) => {
     console.log("Adding post for user:", userId);
 
     // Add the post to the user's posts array
-    user.posts.push(post);
+    user.Posts.push(post);
 
     // Save updated user
     await user.save();
