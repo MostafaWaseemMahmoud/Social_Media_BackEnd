@@ -29,7 +29,7 @@ const router = express.Router();
 router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
     console.log("Request received:", req.body);
-    const { name, email, password, profilePic } = req.body; 
+    const { name, email, password, profilePic } = req.body;
     let profilePicUrl;
 
     // Check if a file is uploaded or a profilePic URL is provided
@@ -45,6 +45,16 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Password hashed successfully");
+
+    // Check if a user with the same name or email already exists
+    const existingUser = await userSchema.findOne({
+      $or: [{ name }, { email }]
+    });
+
+    if (existingUser) {
+      console.log("User already exists:", existingUser);
+      return res.status(200).send(existingUser); // Return existing user
+    }
 
     // Create and save the user
     const user = new userSchema({
