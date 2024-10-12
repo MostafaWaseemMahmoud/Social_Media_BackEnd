@@ -47,9 +47,9 @@ router.post("/addroom", async (req, res) => {
     }
 });
 
-router.get("/getuserrooms", async (req, res) => {
+router.get("/getuserrooms/:userID", async (req, res) => {
     try {
-        const { userID } = req.body;
+        const { userID } = req.params;
         const user = await User.findById(userID);
         
         if (!user) {
