@@ -7,13 +7,7 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     profilePic: { type: String },
     Friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Self-referencing 'User' schema for friends
-    Posts: [{
-        mediaUrl,
-        postTitle,
-        postDescription, 
-        likes,
-        comments 
-    }]
+    Posts: []
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
