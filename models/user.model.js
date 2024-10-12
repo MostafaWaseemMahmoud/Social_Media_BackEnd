@@ -6,8 +6,8 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profilePic: { type: String },
-    Friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Self-referencing 'User' schema for friends
-    Posts: []
+    friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Self-referencing for friends
+    posts: [] // Posts array
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

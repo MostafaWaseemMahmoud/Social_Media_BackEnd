@@ -78,11 +78,11 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
 // Route to get all users
 router.get('/users', async (req, res) => {
   try {
-    const users = await userSchema.find(); // Retrieve all users from the database
-    res.status(200).json(users); // Return the users as JSON
-  } catch (err) {
-    console.error("Error while fetching users:", err);
-    res.status(500).send("Error while fetching users. Please try again.");
+      const users = await User.find();
+      res.status(200).json(users);
+  } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "=>Internal Server Error<=" });
   }
 });
 
