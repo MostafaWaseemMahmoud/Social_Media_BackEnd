@@ -3,8 +3,6 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const userSchema = require('../models/user.model');
-const commentSchema = require('../models/comments.model');
-const postSchema = require('../models/posts.model');
 require('dotenv').config(); // Use environment variables for security
 const router = express.Router();
 
