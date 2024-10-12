@@ -2,6 +2,7 @@ const express = require('express');
 const usersettings = require("./routers/userProfile");
 const friendsettings = require("./routers/friends");
 const posts = require("./routers/posts");
+const room = require("./routers/room");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
 const cors = require("cors")
@@ -13,6 +14,7 @@ app.use(cors())
 app.use("/usersettings" , usersettings)
 app.use("/friendsettings" , friendsettings)
 app.use("/posts" , posts);
+app.use("/rooms" , room);
 app.get("/" ,  (req,res)=> {
     res.send("Server Is Connected !!!")
 })

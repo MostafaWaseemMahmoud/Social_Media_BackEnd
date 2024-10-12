@@ -6,8 +6,9 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profilePic: { type: String },
-    Friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Assuming 'User' refers to another schema
-    Posts: [] // Assuming 'User' refers to another schema
+    Friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Self-referencing 'User' schema for friends
+    Posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }] // Assuming there is a 'Post' schema
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+module.exports = User;
