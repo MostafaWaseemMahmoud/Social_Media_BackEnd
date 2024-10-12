@@ -3,8 +3,10 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const User = require('../models/user.model');
+const cors = require("cors");
 require('dotenv').config();
 const router = express.Router();
+router.use(cors())
 
 // Configure Cloudinary
 cloudinary.config({
