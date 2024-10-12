@@ -2,11 +2,10 @@ const express = require('express');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
-const userSchema = require('../models/user.model');
-const cors = require("cors")
-require('dotenv').config(); // Use environment variables for security
+const User = require('../models/user.model');
+require('dotenv').config();
 const router = express.Router();
-router.use(cors())
+
 // Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,76 +13,51 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Set up Cloudinary storage for Multer (for both images and videos)
+// Set up Cloudinary storage for Multer
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'uploads', // Folder where files will be uploaded on Cloudinary
-        resource_type: 'auto', // Automatically detects whether the file is an image or video
+        folder: 'uploads',
+        resource_type: 'auto',
         public_id: (req, file) => file.fieldname + '-' + Date.now(),
     },
 });
 
-// Multer setup with file size limit (100 MB)
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 100 * 1024 * 1024 } // 100 MB file size limit
+    limits: { fileSize: 100 * 1024 * 1024 } // 100 MB limit
 });
 
-// Upload route using Cloudinary storage for both images and videos
-router.post('/addpost/:userId', upload.single('file'), (req, res, next) => {
-    res.setTimeout(60000, () => { // Set timeout of 1 minute
-        return res.status(408).send("Request timed out. Try again.");
-    });
-    next();
-}, async (req, res) => {
+// Upload post
+router.post('/addpost/:userId', upload.single('file'), async (req, res) => {
     try {
         const { userId } = req.params;
+        if (!req.file) return res.status(400).send("No file uploaded.");
 
-        // Log that request has been received
-        console.log("Received request to upload file for user:", userId);
-
-        // Check if a file was uploaded
-        if (!req.file) {
-            return res.status(400).send("No file uploaded.");
-        }
-
-        // Log the uploaded file details
-        console.log("File uploaded to Cloudinary:", req.file.path);
-
-        const mediaUrl = req.file.path; // Image/Video URL from Cloudinary
+        const mediaUrl = req.file.path;
         const { postTitle, postDescription } = req.body;
 
-        // Find user by ID
-        const user = await userSchema.findById(userId);
-        if (!user) {
-            return res.status(404).send("Can't Find Any User With This Id");
-        }
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).send("User not found.");
 
-        // Create new post object
+        console.log(user); // Debug: log user object
+
         const post = {
-            mediaUrl: mediaUrl, // Supports both images and videos
+            mediaUrl: mediaUrl,
             postTitle: postTitle,
             postDescription: postDescription,
-            likes: [], // Initialize likes array
-            comments: [] // Initialize comments array
+            likes: [],
+            comments: []
         };
 
-        // Log that the post is being added to the user
-        console.log("Adding post for user:", userId);
-
-        // Add the post to the user's posts array
+        // Ensure posts is defined
+        user.posts = user.posts || []; 
         user.posts.push(post);
-
-        // Save updated user
         await user.save();
 
-        // Log successful save and respond
-        console.log("Post saved successfully for user:", userId);
-
-        res.status(200).send("Post Added Successfully");
+        res.status(200).send("Post added successfully.");
     } catch (err) {
-        console.error("Error occurred during upload:", err.message);
+        console.error(err);
         res.status(500).send("We have an error: " + err.message);
     }
 });
@@ -94,79 +68,56 @@ router.post("/commentpost/:postId", async (req, res) => {
     const { commentuserId, commentDescription, postuserId } = req.body;
 
     try {
-        // Validate input
         if (!commentuserId || !commentDescription || !postuserId) {
             return res.status(400).send("Missing required fields.");
         }
 
-        const postuser = await userSchema.findById(postuserId);
-        if (!postuser) {
-            return res.status(404).send("No User With This ID");
-        }
+        const postuser = await User.findById(postuserId);
+        if (!postuser) return res.status(404).send("User not found.");
 
-        // Find the post
         const post = postuser.posts.find(post => post._id.toString() === postId);
-        if (!post) {
-            return res.status(404).send("No post found with this ID");
-        }
+        if (!post) return res.status(404).send("Post not found.");
 
-        // Create a new comment
         const comment = {
             commentuserId: commentuserId,
             commentDescription: commentDescription
         };
 
-        // Add comment to the post
-        post.comments = post.comments || []; // Ensure comments array exists
         post.comments.push(comment);
-
-        // Save updated user with the new comment
         await postuser.save();
 
         res.status(200).send("Comment added successfully.");
     } catch (err) {
-        console.error("Error occurred during commenting:", err.message);
+        console.error(err);
         res.status(500).send("We have an error: " + err.message);
     }
 });
 
-// Like on a post
+// Like a post
 router.post("/likepost/:postId", async (req, res) => {
     const { postId } = req.params;
     const { commentuserId, postuserId } = req.body;
 
     try {
-        // Validate input
         if (!commentuserId || !postuserId) {
             return res.status(400).send("Missing required fields.");
         }
 
-        const postuser = await userSchema.findById(postuserId);
-        if (!postuser) {
-            return res.status(404).send("No User With This ID");
-        }
+        const postuser = await User.findById(postuserId);
+        if (!postuser) return res.status(404).send("User not found.");
 
-        // Find the post
         const post = postuser.posts.find(post => post._id.toString() === postId);
-        if (!post) {
-            return res.status(404).send("No post found with this ID");
-        }
+        if (!post) return res.status(404).send("Post not found.");
 
-        // Initialize likes array if it doesn't exist
-        post.likes = post.likes || [];
-        // Check if the user has already liked the post
         if (!post.likes.includes(commentuserId)) {
             post.likes.push(commentuserId);
+            await postuser.save();
+            res.status(200).send("Like added successfully.");
         } else {
-            return res.status(400).send("You have already liked this post.");
+            res.status(400).send("You have already liked this post.");
         }
-
-        // Save updated user with the new like
-        await postuser.save();
-
-        res.status(200).send("Like added successfully.");
     } catch (err) {
-        console.error("Error occurred during liking post:", err.message);
+        console.error(err);
         res.status(500).send("We have an error: " + err.message);
     }
 });
