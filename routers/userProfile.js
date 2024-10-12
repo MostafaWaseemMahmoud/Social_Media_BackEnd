@@ -5,8 +5,7 @@ const cloudinary = require('cloudinary').v2;
 const bcrypt = require('bcrypt');
 const userSchema = require('../models/user.model');
 require('dotenv').config();
-const cors = require("cors")
-app.use(cors())
+
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -78,25 +77,11 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
 // Route to get all users
 router.get('/users', async (req, res) => {
   try {
-      const users = await User.find();
-      res.status(200).json(users);
-  } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "=>Internal Server Error<=" });
-  }
-});
-
-// Route to get user by ID
-router.get('/users/:id', async (req, res) => {
-  try {
-    const user = await userSchema.findById(req.params.id); // Fetch user by ID
-    if (!user) {
-      return res.status(404).send("User not found."); // Handle case where user does not exist
-    }
-    res.status(200).json(user); // Return the user as JSON
+    const users = await userSchema.find(); // Retrieve all users from the database
+    res.status(200).json(users); // Return the users as JSON
   } catch (err) {
-    console.error("Error while fetching user:", err);
-    res.status(500).send("Error while fetching user. Please try again.");
+    console.error("Error while fetching users:", err);
+    res.status(500).send("Error while fetching users. Please try again.");
   }
 });
 
