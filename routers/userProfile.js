@@ -5,7 +5,8 @@ const cloudinary = require('cloudinary').v2;
 const bcrypt = require('bcrypt');
 const userSchema = require('../models/user.model');
 require('dotenv').config();
-
+const cors = require("cors")
+app.use(cors())
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

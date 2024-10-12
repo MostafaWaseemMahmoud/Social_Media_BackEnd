@@ -5,6 +5,8 @@ const cloudinary = require('cloudinary').v2;
 const userSchema = require('../models/user.model');
 require('dotenv').config(); // Use environment variables for security
 const router = express.Router();
+const cors = require("cors")
+app.use(cors())
 
 // Configure Cloudinary
 cloudinary.config({
