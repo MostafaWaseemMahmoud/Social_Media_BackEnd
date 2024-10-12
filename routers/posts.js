@@ -30,62 +30,43 @@ const upload = multer({
 });
 
 // Upload route using Cloudinary storage for both images and videos
-router.post('/addpost/:userId', upload.single('file'), (req, res, next) => {
-    res.setTimeout(60000, () => { // Set timeout of 1 minute
-        return res.status(408).send("Request timed out. Try again.");
+router.post('/addpost/:userId', upload.single('file'), async (req, res) => {
+    res.setTimeout(60000, () => {
+        return res.status(408).json({ status: 'error', message: "Request timed out. Try again." });
     });
-    next();
-}, async (req, res) => {
+
     try {
         const { userId } = req.params;
 
-        // Log that request has been received
-        console.log("Received request to upload file for user:", userId);
-
-        // Check if a file was uploaded
         if (!req.file) {
-            return res.status(400).send("No file uploaded.");
+            return sendResponse(res, 400, "No file uploaded.");
         }
 
-        // Log the uploaded file details
-        console.log("File uploaded to Cloudinary:", req.file.path);
-
-        const mediaUrl = req.file.path; // Image/Video URL from Cloudinary
+        const mediaUrl = req.file.path;
         const { postTitle, postDescription } = req.body;
 
-        // Find user by ID
         const user = await userSchema.findById(userId);
         if (!user) {
-            return res.status(404).send("Can't Find Any User With This Id");
+            return sendResponse(res, 404, "Can't Find Any User With This Id");
         }
 
-        // Create new post object
         const post = {
-            mediaUrl: mediaUrl, // Supports both images and videos
-            postTitle: postTitle,
-            postDescription: postDescription,
-            likes: [], // Initialize likes array
-            comments: [] // Initialize comments array
+            mediaUrl,
+            postTitle,
+            postDescription,
+            likes: [],
+            comments: []
         };
 
-        // Log that the post is being added to the user
-        console.log("Adding post for user:", userId);
-
-        // Add the post to the user's posts array
         user.posts.push(post);
-
-        // Save updated user
         await user.save();
 
-        // Log successful save and respond
-        console.log("Post saved successfully for user:", userId);
-
-        res.status(200).send("Post Added Successfully");
+        sendResponse(res, 200, "Post Added Successfully");
     } catch (err) {
-        console.error("Error occurred during upload:", err.message);
-        res.status(500).send("We have an error: " + err.message);
+        next(err); // Pass the error to the error handler
     }
 });
+
 
 // Comment on a post
 router.post("/commentpost/:postId", async (req, res) => {
