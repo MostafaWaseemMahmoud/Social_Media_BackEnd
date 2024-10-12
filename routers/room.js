@@ -40,7 +40,7 @@ router.post("/addroom", async (req, res) => {
         });
         
         await room.save();
-        res.status(200).send("Room added successfully! :-)");
+        res.status(200).send(room);
     } catch (error) {
         console.error("Error in adding room:", error);
         res.status(500).send(`Error in adding room: ${error.message}`);
