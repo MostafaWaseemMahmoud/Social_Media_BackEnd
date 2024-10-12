@@ -5,12 +5,10 @@ const posts = require("./routers/posts");
 const room = require("./routers/room");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
-const cors = require("cors")
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
-app.use(cors())
 app.use("/usersettings" , usersettings)
 app.use("/friendsettings" , friendsettings)
 app.use("/posts" , posts);
@@ -19,6 +17,18 @@ app.get("/" ,  (req,res)=> {
     res.send("Server Is Connected !!!")
 })
 
+
+const cors = require('cors');
+
+// Use CORS with options
+const corsOptions = {
+    origin: 'https://socialmedia-application1.netlify.app', // Allow your frontend domain
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Enable cookies to be sent
+    optionsSuccessStatus: 204 // For legacy browser support
+};
+
+app.use(cors(corsOptions));
 
 mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e").then(()=> {
     console.log("DataBase Connected Successfully");
