@@ -1,52 +1,32 @@
 const express = require('express');
-const mongoose = require("mongoose");
-const cors = require('cors');
-
-// Import routers
 const usersettings = require("./routers/userProfile");
 const friendsettings = require("./routers/friends");
 const posts = require("./routers/posts");
 const room = require("./routers/room");
-
+const mongoose = require("mongoose");
+const bodyParser = require('body-parser');
+const cors = require("cors")
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
-
-// CORS Configuration
-const corsOptions = {
-    origin: 'https://socialmedia-application1.netlify.app', // Allow your frontend domain
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Enable cookies to be sent
-    optionsSuccessStatus: 204 // For legacy browser support
-};
-app.use(cors(corsOptions));
-
-// Body Parser Middleware
-app.use(express.json()); // Built-in middleware for JSON parsing
-
-// Route handlers
-app.use("/usersettings", usersettings);
-app.use("/friendsettings", friendsettings);
-app.use("/posts", posts);
-app.use("/rooms", room);
-
-// Health Check Route
-app.get("/", (req, res) => {
-    res.send("Server Is Connected !!!");
-});
-
-// MongoDB Connection
-mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+app.use(bodyParser.json());
+app.use(cors())
+app.use("/usersettings" , usersettings)
+app.use("/friendsettings" , friendsettings)
+app.use("/posts" , posts);
+app.use("/rooms" , room);
+app.get("/" ,  (req,res)=> {
+    res.send("Server Is Connected !!!")
 })
-.then(() => {
-    console.log("Database Connected Successfully");
+
+
+mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e").then(()=> {
+    console.log("DataBase Connected Successfully");
     app.listen(PORT, () => {
-        console.log(`Server started on http://localhost:${PORT}`);
-    });
+        console.log('Server started on http://localhost:3000');
+      });
+}).catch((e)=> {
+    console.log("Can't Connect To Database With This Error: " + e)
 })
-.catch((error) => {
-    console.error("Can't Connect To Database With This Error: " + error);
-});
 
 module.exports = app;
