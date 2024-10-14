@@ -11,12 +11,14 @@ const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:5173/", // Adjust as necessary
-    methods: ["GET", "POST"],
-  },
-});
+const cors = require("cors");
+
+app.use(cors({
+  origin: ["https://your-client-domain.com", "http://localhost:5173"], // Allow both origins
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
+
 
 // Socket.IO connection
 io.on('connection', (socket) => {
