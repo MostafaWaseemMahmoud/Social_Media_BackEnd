@@ -20,13 +20,13 @@ router.post("/addfriend", async (req, res) => {
         }
 
         // Check if the friend is already in the user's friend list
-        if (User.Friends.includes(friendUser._id)) {
+        if (User.friends.includes(friendUser._id)) {
             return res.status(400).send("This Friend Already Exists");
         }
 
         // Add each other as friends
-        User.Friends.push(friendUser._id);
-        friendUser.Friends.push(User._id);
+        User.friends.push(friendUser._id);
+        friendUser.friends.push(User._id);
 
         // Save changes
         await User.save();
@@ -34,7 +34,7 @@ router.post("/addfriend", async (req, res) => {
 
         res.status(200).send("Friend Added Successfully");
     } catch (error) {
-        res.status(500).send("Error adding friend");
+        res.status(500).send("Error adding friend HAHAHAHAHAHHA");
     }
 });
 

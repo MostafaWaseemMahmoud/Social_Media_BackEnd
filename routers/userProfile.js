@@ -85,4 +85,15 @@ router.get('/users', async (req, res) => {
   }
 });
 
+router.get('/users/:id', async (req, res) => {
+  const {id} = req.params;
+  try {
+    const users = await userSchema.findById(id); // Retrieve all users from the database
+    res.status(200).json(users); // Return the users as JSON
+  } catch (err) {
+    console.error("Error while fetching users:", err);
+    res.status(500).send("Error while fetching users. Please try again.");
+  }
+});
+
 module.exports = router;
