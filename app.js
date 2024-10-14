@@ -11,13 +11,6 @@ const app = express();
 const server = http.createServer(app);
 const cors = require("cors");
 
-app.use(cors({
-  origin: ["https://your-client-domain.com", "http://localhost:5173"], // Allow both origins
-  methods: ["GET", "POST"],
-  credentials: true,
-}));
-
-
 // Socket.IO connection
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
