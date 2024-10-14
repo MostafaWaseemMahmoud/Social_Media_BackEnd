@@ -7,8 +7,6 @@ const posts = require("./routers/posts");
 const room = require("./routers/room");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
-const cors = require("cors");
-
 const app = express();
 const server = http.createServer(app);
 const cors = require("cors");
