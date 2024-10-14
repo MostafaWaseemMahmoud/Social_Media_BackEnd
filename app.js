@@ -7,12 +7,14 @@ const videoCallRouter = require("./routers/livestreaming"); // Import the video 
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
 const cors = require("cors");
-
+const http = require('http');
+const socketIo = require('socket.io');
 const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
-
+const server = http.createServer(app);
+const io = socketIo(server);
 const PORT = process.env.PORT || 3000;
 
 // Use all your routers
