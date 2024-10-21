@@ -44,7 +44,7 @@ router.post('/addpost/:userId', multer({
             mediaUrl,
             postTitle,
             postDescription,
-            likes: [],
+            likes: 0,
             comments: []
         };
 
