@@ -1,41 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
 
-// Create an HTTP server (can also use app's server later if needed)
-const server = http.createServer();
-const io = socketIo(server);
+const io = new Server(5001, {
+    cors: {
+        origin: '*', // Allow requests from any origin
+        methods: ['GET', 'POST'],
+    },
+});
 
-// Handle Socket.IO connections and signaling
 io.on('connection', (socket) => {
-  console.log('New user connected');
+    console.log('New client connected');
 
-  // Join a room
-  socket.on('join-room', (roomId) => {
-    socket.join(roomId);
-    socket.broadcast.to(roomId).emit('user-connected', socket.id);
-
-    // Handle signaling data (for WebRTC)
-    socket.on('signal', (data) => {
-      io.to(data.to).emit('signal', data);
+    socket.on('join room', (roomId) => {
+        socket.join(roomId);
+        console.log(`Client joined room: ${roomId}`);
     });
 
-    // Handle user disconnection
+    // Handle other events here
+
     socket.on('disconnect', () => {
-      socket.broadcast.to(roomId).emit('user-disconnected', socket.id);
+        console.log('Client disconnected');
     });
-  });
-});
-
-// Route to test the video call service (optional)
-router.get('/', (req, res) => {
-  res.send('Video call service is running');
-});
-
-// You can listen to a specific port or use the existing server in app.js
-server.listen(5001, () => {
-  console.log('Video call signaling server running on port 5001');
 });
 
 module.exports = router;

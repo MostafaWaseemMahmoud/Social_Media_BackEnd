@@ -3,7 +3,7 @@ const usersettings = require("./routers/userProfile");
 const friendsettings = require("./routers/friends");
 const posts = require("./routers/posts");
 const room = require("./routers/room");
-const videoCallRouter = require("./routers/livestreaming"); // Import the video call router
+const videoCallRouter = require("./routers/livestreaming");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
 const cors = require("cors");
@@ -20,14 +20,12 @@ app.use("/usersettings", usersettings);
 app.use("/friendsettings", friendsettings);
 app.use("/posts", posts);
 app.use("/rooms", room);
+app.use("/api/video-call", videoCallRouter);
 
-// Video Call Router
-app.use("/api/video-call", videoCallRouter); // Use the video call router
-
-// Test the server connection
 app.get("/", (req, res) => {
     res.send("Server Is Connected !!!");
 });
+
 
 // MongoDB connection and starting the main server
 mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e")

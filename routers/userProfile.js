@@ -15,14 +15,14 @@ cloudinary.config({
 
 // Set up Cloudinary storage for Multer
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: {
-    folder: 'uploads', // Folder where files will be uploaded on Cloudinary
-    public_id: (req, file) => file.fieldname + '-' + Date.now(),
+    folder: 'uploads', 
+    public_id: (req, file) => `${file.fieldname}-${Date.now()}`,
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 const router = express.Router();
 
 // Route to add a new user
@@ -30,41 +30,19 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
   try {
     console.log("Request received:", req.body);
     const { name, email, password, profilePic } = req.body;
-    let profilePicUrl;
 
-    // Check if a file is uploaded or a profilePic URL is provided
-    if (req.file) {
-      profilePicUrl = req.file.path; // Use uploaded file's URL
-      console.log("File uploaded to Cloudinary:", profilePicUrl);
-    } else if (profilePic) {
-      profilePicUrl = profilePic; // Use URL from body
-    } else {
-      profilePicUrl = 'https://example.com/default-profile-pic.jpg'; // Default profile picture
-    }
+    const profilePicUrl = req.file ? req.file.path : profilePic || 'https://example.com/default-profile-pic.jpg';
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Password hashed successfully");
 
-    // Check if a user with the same name or email already exists
-    const existingUser = await userSchema.findOne({
-      $or: [{ name }, { email }]
-    });
-
+    const existingUser = await userSchema.findOne({ $or: [{ name }, { email }] });
     if (existingUser) {
       console.log("User already exists:", existingUser);
-      return res.status(200).send(existingUser); // Return existing user
+      return res.status(200).send(existingUser);
     }
 
-    // Create and save the user
-    const user = new userSchema({
-      name,
-      email,
-      password: hashedPassword,
-      profilePic: profilePicUrl,
-      Friends: [],
-    });
-
+    const user = new userSchema({ name, email, password: hashedPassword, profilePic: profilePicUrl, friends: [] });
     await user.save();
     console.log("User saved successfully");
     res.status(200).send(user);
@@ -77,22 +55,23 @@ router.post('/addUser', upload.single('file'), async (req, res) => {
 // Route to get all users
 router.get('/users', async (req, res) => {
   try {
-    const users = await userSchema.find(); // Retrieve all users from the database
-    res.status(200).json(users); // Return the users as JSON
+    const users = await userSchema.find();
+    res.status(200).json(users);
   } catch (err) {
     console.error("Error while fetching users:", err);
     res.status(500).send("Error while fetching users. Please try again.");
   }
 });
 
+// Route to get a user by ID
 router.get('/users/:id', async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
-    const users = await userSchema.findById(id); // Retrieve all users from the database
-    res.status(200).json(users); // Return the users as JSON
+    const user = await userSchema.findById(id);
+    res.status(200).json(user);
   } catch (err) {
-    console.error("Error while fetching users:", err);
-    res.status(500).send("Error while fetching users. Please try again.");
+    console.error("Error while fetching user:", err);
+    res.status(500).send("Error while fetching user. Please try again.");
   }
 });
 
