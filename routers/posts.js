@@ -2,24 +2,25 @@ const express = require('express');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
+const mongoose = require('mongoose');
 const User = require('../models/user.model');
 const cors = require("cors");
 require('dotenv').config();
 const router = express.Router();
 router.use(cors());
 
-// Configure Cloudinary
+// Cloudinary configuration
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Helper function to generate a random alphanumeric ID
+// Generate random post ID
 const generateRandomId = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
-// Add a post
-router.post('/addpost/:userId', multer({ 
+// Upload a new post
+router.post('/addpost/:userId', multer({
     storage: new CloudinaryStorage({
         cloudinary,
         params: {
@@ -31,23 +32,28 @@ router.post('/addpost/:userId', multer({
 }).single('file'), async (req, res) => {
     try {
         const { userId } = req.params;
-        if (!req.file) return res.status(400).send("No file uploaded.");
 
-        const mediaUrl = req.file.path;
+        const mediaUrl = req.file?.path;
         const { postTitle, postDescription } = req.body;
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).send("User not found.");
 
         const post = {
-            _id: generateRandomId(),
+            id: generateRandomId(),
             mediaUrl,
             postTitle,
             postDescription,
-            likes: 0,
-            comments: []
+            likes: [],
+            comments: [],
+            dateCreated: new Date()
         };
 
+        console.log(post);
+        if(!post.id){
+           res.status(500).send("Error While Generating An Id Fo this Post ")
+            return console.log("No Generated Id");
+        }
         user.posts = user.posts || [];
         user.posts.push(post);
         await user.save();
@@ -59,28 +65,24 @@ router.post('/addpost/:userId', multer({
     }
 });
 
-
-function getPostFromUser(postsArr,postId) {
-    for (let i = 0; i < postsArr.length; i++) {
-        const post = postsArr[i];
-        if(post._id == postId) {
-            return post;
-        }else {
-            console.log("0--0--0")
-        }
-    }
+// Helper function: Get post index from user
+function getPostIndexFromUser(postsArr, postId) {
+    return postsArr.findIndex(post => post.id === postId);
 }
 
 // Add a comment to a post
 router.post("/commentpost", async (req, res) => {
-    const { postId, userPostId, commentDescription } = req.body;
+    const { postId, userPostId, commentDescription, userid } = req.body;
+
+    console.log("📦 Received in backend:", req.body);
+
     try {
-        if (!postId) {
-            return res.status(404).send("Post ID not found.");
-        } else if (!userPostId) {
-            return res.status(404).send("User ID not found.");
-        } else if (!commentDescription) {
-            return res.status(404).send("Comment description not found.");
+        if (!postId || !userPostId || !commentDescription || !userid) {
+            return res.status(400).send("Missing required fields.");
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(userid)) {
+            return res.status(400).send("Invalid user ID format.");
         }
 
         const userPost = await User.findById(userPostId);
@@ -88,21 +90,39 @@ router.post("/commentpost", async (req, res) => {
             return res.status(404).send("User not found.");
         }
 
-        const post = getPostFromUser(userPost.posts, postId);
-        if (!post) {
+        const postIndex = getPostIndexFromUser(userPost.posts, postId);
+        if (postIndex === -1) {
             return res.status(404).send("Post not found.");
         }
 
-        post.comments.push(commentDescription);
+        const post = userPost.posts[postIndex];
+        post.comments = post.comments || [];
+        post.comments.push({
+            commentDescription: commentDescription,
+            commentuserId: new mongoose.Types.ObjectId(userid)
+        });
+
+        userPost.posts[postIndex] = post;
         await userPost.save();
 
-        return res.status(200).send(`Comment added: ${commentDescription} to This user `);
+        return res.status(200).json({
+            message: "Comment added successfully",
+            comment: {
+                commentDescription,
+                commentuserId: userid
+            }
+        });
+
     } catch (error) {
         console.error("Error adding comment:", error);
-        res.status(500).send("Error adding comment.", error);
+        res.status(500).json({
+            error: "Error adding comment",
+            details: error.message
+        });
     }
 });
 
+// Get comments
 router.get("/getcomments/:userId/:postId", async (req, res) => {
     const { userId, postId } = req.params;
 
@@ -112,7 +132,7 @@ router.get("/getcomments/:userId/:postId", async (req, res) => {
             return res.status(404).send("User not found.");
         }
 
-        const post = getPostFromUser(user.posts, postId);
+        const post = user.posts.find(p => p._id === postId);
         if (!post) {
             return res.status(404).send("Post not found.");
         }
@@ -124,29 +144,34 @@ router.get("/getcomments/:userId/:postId", async (req, res) => {
     }
 });
 
-router.post("/likepost/:userId/:postId", async (req, res) => {
-    const { userId, postId } = req.params;
+// Like a post
+router.post("/likepost/:userlikeid/:userId/:postId", async (req, res) => {
+    const { userlikeid, userId, postId } = req.params;
 
     try {
-        // Find the user who owns the post
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).send("User not found.");
         }
 
-        // Find the post to like
-        const post = getPostFromUser(user.posts, postId);
-        if (!post) {
+        const postIndex = getPostIndexFromUser(user.posts, postId);
+        if (postIndex === -1) {
             return res.status(404).send("Post not found.");
         }
 
-        // Increment the like count by 1
-        post.likes += 1;
+        const post = user.posts[postIndex];
 
-        // Save the user document
+        const alreadyLiked = post.likes.some(like => like.likeuserId === userlikeid);
+        if (alreadyLiked) {
+            return res.status(409).send("You had Already Liked This Post");
+        }
+
+        post.likes.push({ likeuserId: userlikeid });
+
+        user.posts[postIndex] = post;
         await user.save();
 
-        res.status(200).send(`Post liked successfully. Total likes: ${post.likes}`);
+        res.status(200).send(`Post liked successfully. Total likes: ${post.likes.length}`);
     } catch (error) {
         console.error("Error adding like:", error);
         res.status(500).send("Error adding like.");

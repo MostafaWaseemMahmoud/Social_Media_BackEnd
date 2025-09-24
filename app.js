@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 
 
 // MongoDB connection and starting the main server
-mongoose.connect("mongodb+srv://mostafawaseem22:deYV2xQGuSdqyJVy@e.ezjaj.mongodb.net/?retryWrites=true&w=majority&appName=e")
+mongoose.connect("mongodb+srv://Mostafawaseem:mostafawaseem11.@mc1.byqx8tc.mongodb.net/?retryWrites=true&w=majority&appName=Mc1")
     .then(() => {
         console.log("Database Connected Successfully");
         app.listen(PORT, () => {
