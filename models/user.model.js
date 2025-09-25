@@ -12,7 +12,7 @@ const likeSchema = new mongoose.Schema({
 });
 
 const postsSchema = new mongoose.Schema({
-    id: {type:String,unique:true},
+    id: {type:String},
   postTitle: {
     type: String,
     required: true,
