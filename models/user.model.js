@@ -20,7 +20,6 @@ const postsSchema = new mongoose.Schema({
   postDescription: {
     type: String,
     required: true,
-    unique: true,
   },
   mediaUrl: {
     type: String,

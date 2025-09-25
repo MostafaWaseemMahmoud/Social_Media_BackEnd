@@ -31,6 +31,26 @@ app.get("/", (req, res) => {
 mongoose.connect("mongodb+srv://Mostafawaseem:mostafawaseem11.@mc1.byqx8tc.mongodb.net/?retryWrites=true&w=majority&appName=Mc1")
     .then(() => {
         console.log("Database Connected Successfully");
+
+        // ✅ الكود اللي هيشيل الـ index القديم اللي بيعمل مشكلة
+mongoose.connection.collection('users').getIndexes()
+  .then(indexes => {
+    const indexNames = Object.keys(indexes);
+    if (indexNames.includes("posts.postDescription_1")) {
+      return mongoose.connection.collection('users').dropIndex("posts.postDescription_1");
+    } else {
+      console.log("ℹ️ No bad index found on posts.postDescription");
+    }
+  })
+  .then(() => {
+    console.log("✅ Index posts.postDescription_1 dropped (if it existed).");
+  })
+  .catch(err => {
+    console.error("❌ Failed to drop index:", err.message);
+  });
+
+
+        // ✅ شغل السيرفر بعد حذف الـ index
         app.listen(PORT, () => {
             console.log(`Server started on http://localhost:${PORT}`);
         });
@@ -38,5 +58,6 @@ mongoose.connect("mongodb+srv://Mostafawaseem:mostafawaseem11.@mc1.byqx8tc.mongo
     .catch((e) => {
         console.log("Can't Connect to Database: " + e);
     });
+
 
 module.exports = app;
